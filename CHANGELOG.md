@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1] - 2026-08-07
+
+### Fixed
+
+- **#89** - `loadAccounts()` no longer treats unreadable storage as "no accounts". Permission/parse/format/version errors now throw `AccountStorageUnreadableError` (with recovery instructions) instead of returning `null`, so `persistAccountPool` and `saveAccounts` can never silently overwrite existing accounts when the file exists but cannot be read.
+- **#89** - Fresh logins (`replaceAll=true`) now truly replace on-disk accounts via `saveAccountsReplace`, instead of re-merging stale accounts back into the pool.
+
 ## [1.6.0] - 2026-02-20
 
 ### Fixed
