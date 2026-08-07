@@ -171,6 +171,50 @@ describe("resolveModelWithTier", () => {
       expect(result.quotaPreference).toBe("antigravity");
     });
   });
+
+  describe("Gemini 3.6 Flash (tiered upstream names)", () => {
+    it("antigravity-gemini-3.6-flash defaults to -low", () => {
+      const result = resolveModelWithTier("antigravity-gemini-3.6-flash");
+      expect(result.actualModel).toBe("gemini-3.6-flash-low");
+      expect(result.thinkingLevel).toBe("low");
+      expect(result.quotaPreference).toBe("antigravity");
+    });
+
+    it("gemini-3.6-flash without prefix defaults to -low", () => {
+      const result = resolveModelWithTier("gemini-3.6-flash");
+      expect(result.actualModel).toBe("gemini-3.6-flash-low");
+      expect(result.thinkingLevel).toBe("low");
+    });
+
+    it("maps tier suffixes to upstream model names", () => {
+      const low = resolveModelWithTier("antigravity-gemini-3.6-flash-low");
+      expect(low.actualModel).toBe("gemini-3.6-flash-low");
+      expect(low.thinkingLevel).toBe("low");
+
+      const medium = resolveModelWithTier("antigravity-gemini-3.6-flash-medium");
+      expect(medium.actualModel).toBe("gemini-3.6-flash-medium");
+      expect(medium.thinkingLevel).toBe("medium");
+
+      const high = resolveModelWithTier("antigravity-gemini-3.6-flash-high");
+      expect(high.actualModel).toBe("gemini-3.6-flash-high");
+      expect(high.thinkingLevel).toBe("high");
+    });
+
+    it("resolveModelForHeaderStyle maps to -low for antigravity", () => {
+      const result = resolveModelForHeaderStyle("gemini-3.6-flash", "antigravity");
+      expect(result.actualModel).toBe("gemini-3.6-flash-low");
+      expect(result.quotaPreference).toBe("antigravity");
+    });
+
+    it("resolveModelWithVariant remaps thinkingLevel to upstream tier", () => {
+      const result = resolveModelWithVariant("antigravity-gemini-3.6-flash", {
+        thinkingLevel: "high",
+      });
+      expect(result.actualModel).toBe("gemini-3.6-flash-high");
+      expect(result.thinkingLevel).toBe("high");
+      expect(result.configSource).toBe("variant");
+    });
+  });
 });
 
 describe("resolveModelWithVariant", () => {

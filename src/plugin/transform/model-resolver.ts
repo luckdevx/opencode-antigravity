@@ -55,6 +55,13 @@ export const MODEL_ALIASES: Record<string, string> = {
   "gemini-3.5-flash-medium": "gemini-3.5-flash-low",
   "gemini-3.5-flash-high": "gemini-3-flash-agent",
 
+  // Gemini 3.6 Flash - upstream uses tiered names (no bare model exists).
+  // Tiers map directly to upstream model IDs (probed 200 OK).
+  "gemini-3.6-flash": "gemini-3.6-flash-low", // default → Low tier
+  "gemini-3.6-flash-low": "gemini-3.6-flash-low",
+  "gemini-3.6-flash-medium": "gemini-3.6-flash-medium",
+  "gemini-3.6-flash-high": "gemini-3.6-flash-high",
+
   // Claude proxy names (gemini- prefix for compatibility)
   "gemini-claude-opus-4-6-thinking-low": "claude-opus-4-6-thinking",
   "gemini-claude-opus-4-6-thinking-medium": "claude-opus-4-6-thinking",
@@ -180,10 +187,11 @@ export function resolveModelWithTier(
   const explicitQuota = isAntigravity || isImageModel;
 
   const isGemini3 = modelWithoutQuota.toLowerCase().startsWith("gemini-3");
-  // Gemini 3.5 Flash uses tiered upstream model names (no bare model exists),
-  // so it must go through MODEL_ALIASES instead of the skipAlias bare-name path.
-  const isGemini35Flash = /^gemini-3\.5-flash/i.test(modelWithoutQuota);
-  const skipAlias = isAntigravity && isGemini3 && !isGemini35Flash;
+  // Gemini 3.5 Flash and Gemini 3.6 Flash use tiered upstream model names
+  // (no bare model exists), so they must go through MODEL_ALIASES instead of
+  // the skipAlias bare-name path. `gemini-3-flash` itself still has a bare model.
+  const isTieredGeminiFlash = /^gemini-3\.(5|6)-flash/i.test(modelWithoutQuota);
+  const skipAlias = isAntigravity && isGemini3 && !isTieredGeminiFlash;
 
   // For Antigravity Gemini 3 Pro models without explicit tier, append default tier
   // Antigravity API: gemini-3-pro requires tier suffix (gemini-3-pro-low/high)
@@ -388,8 +396,8 @@ export function resolveModelWithVariant(
     base.configSource = "variant";
   }
 
-  // Gemini 3.5 Flash: remap actualModel based on thinkingLevel, since upstream
-  // uses distinct tiered model names (no bare model exists, bare = 404).
+  // Gemini 3.5/3.6 Flash: remap actualModel based on thinkingLevel, since
+  // upstream uses distinct tiered model names (no bare model exists, bare = 404).
   if (variantConfig.thinkingLevel && isGemini3ProModel(base.actualModel) === false) {
     const lower = base.actualModel.toLowerCase();
     if (lower.includes("gemini-3.5") && lower.includes("flash")) {
@@ -397,6 +405,20 @@ export function resolveModelWithVariant(
         low: "gemini-3.5-flash-extra-low",
         medium: "gemini-3.5-flash-low",
         high: "gemini-3-flash-agent",
+      };
+      const remapped = tierMap[variantConfig.thinkingLevel];
+      if (remapped) {
+        base.actualModel = remapped;
+        base.thinkingLevel = variantConfig.thinkingLevel;
+        base.configSource = "variant";
+      }
+      return base;
+    }
+    if (lower.includes("gemini-3.6") && lower.includes("flash")) {
+      const tierMap: Record<string, string> = {
+        low: "gemini-3.6-flash-low",
+        medium: "gemini-3.6-flash-medium",
+        high: "gemini-3.6-flash-high",
       };
       const remapped = tierMap[variantConfig.thinkingLevel];
       if (remapped) {
