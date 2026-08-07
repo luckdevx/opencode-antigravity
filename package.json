@@ -9,11 +9,11 @@
   "author": "luckdevx",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/luckdevx/opencode-antigravity-auth-fork.git"
+    "url": "git+https://github.com/luckdevx/opencode-antigravity.git"
   },
-  "homepage": "https://github.com/luckdevx/opencode-antigravity-auth-fork#readme",
+  "homepage": "https://github.com/luckdevx/opencode-antigravity#readme",
   "bugs": {
-    "url": "https://github.com/luckdevx/opencode-antigravity-auth-fork/issues"
+    "url": "https://github.com/luckdevx/opencode-antigravity/issues"
   },
   "keywords": [
     "opencode",

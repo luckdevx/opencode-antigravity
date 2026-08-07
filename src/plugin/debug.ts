@@ -18,7 +18,7 @@ import {
 const MAX_BODY_PREVIEW_CHARS = 12000;
 const MAX_BODY_LOG_CHARS = 50000;
 
-export const DEBUG_MESSAGE_PREFIX = "[opencode-antigravity-auth debug]";
+export const DEBUG_MESSAGE_PREFIX = "[opencode-antigravity debug]";
 
 // =============================================================================
 // Debug State (lazily initialized with config)

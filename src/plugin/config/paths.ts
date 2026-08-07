@@ -1,5 +1,5 @@
 /**
- * Centralized filesystem path resolution for opencode-antigravity-auth.
+ * Centralized filesystem path resolution for opencode-antigravity.
  *
  * All modules that need to locate files in the OpenCode config directory must
  * use this module instead of re-implementing `getConfigDir` locally.

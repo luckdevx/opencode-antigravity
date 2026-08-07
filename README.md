@@ -85,8 +85,8 @@ Models in the quota check are now grouped by quota family, making it clear which
 1. **Clone this repo and build:**
 
    ```bash
-   git clone https://github.com/luckdevx/opencode-antigravity-auth-fork.git ~/projects/opencode-antigravity-auth
-   cd ~/projects/opencode-antigravity-auth
+   git clone https://github.com/luckdevx/opencode-antigravity.git ~/projects/opencode-antigravity
+   cd ~/projects/opencode-antigravity
    npm install && npm run build
    ```
 
@@ -94,7 +94,7 @@ Models in the quota check are now grouped by quota family, making it clear which
 
    ```json
    {
-     "plugin": ["file:///home/YOUR_USER/projects/opencode-antigravity-auth/dist/index.js"]
+     "plugin": ["file:///home/YOUR_USER/projects/opencode-antigravity/dist/index.js"]
    }
    ```
 
@@ -445,7 +445,7 @@ This usually means an MCP tool name starts with a number (for example, a 1mcp ke
 **Diagnosis:**
 1. Disable all MCP servers in your config
 2. Enable one-by-one until error reappears
-3. Report the specific MCP in a [GitHub issue](https://github.com/luckdevx/opencode-antigravity-auth-fork/issues)
+3. Report the specific MCP in a [GitHub issue](https://github.com/luckdevx/opencode-antigravity/issues)
 
 ---
 
@@ -637,7 +637,7 @@ Create `~/.config/opencode/antigravity.json` for optional settings:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/luckdevx/opencode-antigravity-auth-fork/main/assets/antigravity.schema.json"
+  "$schema": "https://raw.githubusercontent.com/luckdevx/opencode-antigravity/main/assets/antigravity.schema.json"
 }
 ```
 

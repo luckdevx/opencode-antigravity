@@ -14,8 +14,8 @@ body:
         > Issues must be written in English. Issues in other languages will be closed immediately.
 
         Check if this feature has already been requested:
-        - [Existing feature requests](https://github.com/luckdevx/opencode-antigravity-auth-fork/issues?q=is%3Aissue+label%3Aenhancement)
-        - [Discussions](https://github.com/luckdevx/opencode-antigravity-auth-fork/discussions)
+        - [Existing feature requests](https://github.com/luckdevx/opencode-antigravity/issues?q=is%3Aissue+label%3Aenhancement)
+        - [Discussions](https://github.com/luckdevx/opencode-antigravity/discussions)
 
   - type: checkboxes
     id: prerequisites
@@ -24,7 +24,7 @@ body:
       options:
         - label: I have searched existing issues and feature requests for duplicates
           required: true
-        - label: I have read the [README](https://github.com/luckdevx/opencode-antigravity-auth-fork#readme)
+        - label: I have read the [README](https://github.com/luckdevx/opencode-antigravity#readme)
           required: true
 
   - type: textarea

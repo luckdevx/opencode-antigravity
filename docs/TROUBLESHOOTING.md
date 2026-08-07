@@ -184,7 +184,7 @@ Some MCP servers have schemas incompatible with Antigravity's strict JSON format
 **Diagnosis:**
 1. Disable all MCP servers in your config
 2. Enable one-by-one until error reappears
-3. Report the specific MCP in a [GitHub issue](https://github.com/luckdevx/opencode-antigravity-auth-fork/issues)
+3. Report the specific MCP in a [GitHub issue](https://github.com/luckdevx/opencode-antigravity/issues)
 
 ---
 
@@ -262,7 +262,7 @@ If adding new accounts:
 
 **What to report:**
 
-If you're seeing unusual rate limit behavior, please share in a [GitHub issue](https://github.com/luckdevx/opencode-antigravity-auth-fork/issues):
+If you're seeing unusual rate limit behavior, please share in a [GitHub issue](https://github.com/luckdevx/opencode-antigravity/issues):
 - Status codes from debug logs (403, 429, etc.)
 - How long the rate-limit state persists
 - Number of accounts and selection strategy used
@@ -301,7 +301,7 @@ If you're seeing unusual rate limit behavior, please share in a [GitHub issue](h
 
 3. **Manual callback extraction** (advanced):
    - When Safari shows the error, the address bar contains `?code=...&scope=...`
-   - See [manual auth support](https://github.com/luckdevx/opencode-antigravity-auth-fork/issues) for how to extract the callback manually
+   - See [manual auth support](https://github.com/luckdevx/opencode-antigravity/issues) for how to extract the callback manually
 
 ---
 
@@ -466,4 +466,4 @@ npx tsx script/test-regression.ts --dry-run     # List tests
 
 ## Still stuck?
 
-Open an issue on [GitHub](https://github.com/luckdevx/opencode-antigravity-auth-fork/issues).
+Open an issue on [GitHub](https://github.com/luckdevx/opencode-antigravity/issues).
