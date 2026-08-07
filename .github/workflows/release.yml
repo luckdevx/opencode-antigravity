@@ -168,22 +168,16 @@ jobs:
 
           } >"$BODY_FILE"
           cat "$BODY_FILE"
-          {
-            echo "body<<EOF"
-            cat "$BODY_FILE"
-            echo "EOF"
-          } >>"$GITHUB_OUTPUT"
+          cp "$BODY_FILE" release-notes.md
 
       - name: Create GitHub release
         if: steps.determine.outputs.changed == 'true' && steps.determine.outputs.tag_exists == 'false'
-        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.determine.outputs.current_version }}
-          release_name: v${{ steps.determine.outputs.current_version }}
-          body: ${{ steps.release_notes.outputs.body }}
-          generate_release_notes: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.determine.outputs.current_version }}" \
+            --title "v${{ steps.determine.outputs.current_version }}" \
+            --notes-file release-notes.md
 
       - name: Publish to npm
         if: steps.determine.outputs.changed == 'true' && steps.determine.outputs.tag_exists == 'false'
