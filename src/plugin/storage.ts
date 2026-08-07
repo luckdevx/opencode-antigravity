@@ -428,7 +428,51 @@ function migrateToV4(data: AnyAccountStorage): AccountStorageV4 | null {
   }
 }
 
-export async function loadAccounts(): Promise<AccountStorageV4 | null> {
+export type AccountsLoadErrorReason =
+  | "permission"
+  | "parse"
+  | "invalid-format"
+  | "unknown-version"
+  | "read-error";
+
+export type AccountsLoadResult =
+  | { status: "ok"; storage: AccountStorageV4 }
+  | { status: "not-found" }
+  | { status: "error"; reason: AccountsLoadErrorReason };
+
+export class AccountStorageUnreadableError extends Error {
+  readonly reason: AccountsLoadErrorReason;
+  readonly filePath: string;
+
+  constructor(reason: AccountsLoadErrorReason, filePath: string) {
+    const detail =
+      reason === "permission"
+        ? "permission denied"
+        : reason === "parse"
+          ? "invalid JSON"
+          : reason === "invalid-format"
+            ? "unexpected storage format"
+            : reason === "unknown-version"
+              ? "unsupported storage version"
+              : "unexpected read error";
+    super(
+      `Cannot read account storage at ${filePath}: ${detail}. ` +
+        `Your existing accounts were NOT modified. ` +
+        `Fix the file permissions or contents, or move the file away to start fresh ` +
+        `(you will need to re-authenticate).`,
+    );
+    this.name = "AccountStorageUnreadableError";
+    this.reason = reason;
+    this.filePath = filePath;
+  }
+}
+
+/**
+ * Loads account storage, distinguishing "file does not exist" (safe to create)
+ * from real read/parse errors (dangerous to ignore because the caller might
+ * silently overwrite existing accounts — Issue #89).
+ */
+async function readAccountsResult(persistMigration: boolean): Promise<AccountsLoadResult> {
   try {
     const path = getStoragePath();
     // Ensure permissions are correct on load (fixes existing files)
@@ -439,7 +483,7 @@ export async function loadAccounts(): Promise<AccountStorageV4 | null> {
 
     if (!Array.isArray(data.accounts)) {
       log.warn("Invalid storage format, ignoring");
-      return null;
+      return { status: "error", reason: "invalid-format" };
     }
 
     const migrated = migrateToV4(data);
@@ -447,11 +491,13 @@ export async function loadAccounts(): Promise<AccountStorageV4 | null> {
       log.warn("Unknown storage version, ignoring", {
         version: (data as { version?: unknown }).version,
       });
-      return null;
+      return { status: "error", reason: "unknown-version" };
     }
 
     // Persist migrated storage so the next load is a fast path (v4).
-    if (data.version !== 4) {
+    // Only from loadAccounts(); loadAccountsUnsafe() (used inside saveAccounts)
+    // must not re-persist, otherwise migration loops forever.
+    if (data.version !== 4 && persistMigration) {
       log.info(`Migrating account storage from v${data.version} to v4`);
       try {
         await saveAccounts(migrated);
@@ -484,19 +530,47 @@ export async function loadAccounts(): Promise<AccountStorageV4 | null> {
     }
 
     return {
-      version: 4,
-      accounts: deduplicatedAccounts,
-      activeIndex,
-      activeIndexByFamily: migrated.activeIndexByFamily,
+      status: "ok",
+      storage: {
+        version: 4,
+        accounts: deduplicatedAccounts,
+        activeIndex,
+        activeIndexByFamily: migrated.activeIndexByFamily,
+      },
     };
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      return { status: "error", reason: "parse" };
+    }
     const code = (error as NodeJS.ErrnoException).code;
     if (code === "ENOENT") {
-      return null;
+      return { status: "not-found" };
+    }
+    if (code === "EACCES" || code === "EPERM") {
+      return { status: "error", reason: "permission" };
     }
     log.error("Failed to load account storage", { error: String(error) });
+    return { status: "error", reason: "read-error" };
+  }
+}
+
+/**
+ * Safe variant that never throws: callers that need to distinguish
+ * "file missing" from "file unreadable" can branch on `status`.
+ */
+export async function loadAccountsSafe(): Promise<AccountsLoadResult> {
+  return readAccountsResult(true);
+}
+
+export async function loadAccounts(): Promise<AccountStorageV4 | null> {
+  const result = await readAccountsResult(true);
+  if (result.status === "ok") {
+    return result.storage;
+  }
+  if (result.status === "not-found") {
     return null;
   }
+  throw new AccountStorageUnreadableError(result.reason, getStoragePath());
 }
 
 export async function saveAccounts(storage: AccountStorageV4): Promise<void> {
@@ -557,30 +631,14 @@ export async function saveAccountsReplace(storage: AccountStorageV4): Promise<vo
 }
 
 async function loadAccountsUnsafe(): Promise<AccountStorageV4 | null> {
-  try {
-    const path = getStoragePath();
-    // Ensure permissions are correct on load (fixes existing files)
-    await ensureSecurePermissions(path);
-
-    const content = await fs.readFile(path, "utf-8");
-    const parsed = JSON.parse(content) as AnyAccountStorage;
-
-    const migrated = migrateToV4(parsed);
-    if (!migrated) {
-      return null;
-    }
-
-    return {
-      ...migrated,
-      accounts: deduplicateAccountsByEmail(migrated.accounts),
-    };
-  } catch (error) {
-    const code = (error as NodeJS.ErrnoException).code;
-    if (code === "ENOENT") {
-      return null;
-    }
+  const result = await readAccountsResult(false);
+  if (result.status === "ok") {
+    return result.storage;
+  }
+  if (result.status === "not-found") {
     return null;
   }
+  throw new AccountStorageUnreadableError(result.reason, getStoragePath());
 }
 
 export async function clearAccounts(): Promise<void> {

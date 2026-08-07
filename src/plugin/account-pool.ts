@@ -7,7 +7,8 @@
 
 import type { AntigravityTokenExchangeResult } from "../antigravity/oauth";
 import { formatRefreshParts, parseRefreshParts } from "./auth";
-import { loadAccounts, saveAccounts } from "./storage";
+import type { AccountStorageV4 } from "./storage";
+import { loadAccounts, saveAccounts, saveAccountsReplace } from "./storage";
 
 function clampInt(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) {
@@ -111,7 +112,7 @@ export async function persistAccountPool(
       ? stored.activeIndex
       : 0;
 
-  await saveAccounts({
+  const storage: AccountStorageV4 = {
     version: 4,
     accounts,
     activeIndex: clampInt(activeIndex, 0, accounts.length - 1),
@@ -119,7 +120,16 @@ export async function persistAccountPool(
       claude: clampInt(activeIndex, 0, accounts.length - 1),
       gemini: clampInt(activeIndex, 0, accounts.length - 1),
     },
-  });
+  };
+
+  if (replaceAll) {
+    // Fresh login: replace whatever is on disk instead of merging, so stale
+    // accounts are not resurrected by saveAccounts' merge path.
+    await saveAccountsReplace(storage);
+    return;
+  }
+
+  await saveAccounts(storage);
 }
 
 export function buildAuthSuccessFromStoredAccount(account: {
