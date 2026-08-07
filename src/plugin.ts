@@ -1451,7 +1451,13 @@ export const createAntigravityPlugin =
                         toolDebugPayload: prepared.toolDebugPayload,
                       });
 
-                      await runThinkingWarmup(prepared, projectContext.effectiveProjectId);
+                      // Run thinking warmup fire-and-forget: the main request does NOT
+                      // depend on its result (it pre-warms the signature cache for a
+                      // LATER turn of the same session), so waiting for it here would
+                      // add a full network round-trip to the happy path for no benefit.
+                      // trackWarmupAttempt (once per session) + internal try/catch make
+                      // this safe to launch without awaiting.
+                      runThinkingWarmup(prepared, projectContext.effectiveProjectId).catch(() => {});
 
                       if (config.request_jitter_max_ms > 0) {
                         const jitterMs = Math.floor(Math.random() * config.request_jitter_max_ms);

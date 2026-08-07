@@ -184,6 +184,12 @@ export function transformSseLine(
     return line;
   }
 
+  // Fast path: if the payload has no `response` field, there is nothing to
+  // transform or cache. Avoid the JSON.parse + JSON.stringify round-trip.
+  if (!line.includes('"response"')) {
+    return line;
+  }
+
   try {
     const parsed = JSON.parse(json) as { response?: unknown };
     if (parsed.response !== undefined) {
