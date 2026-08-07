@@ -37,7 +37,7 @@ function createMockClient() {
 function createPluginInfo(overrides: Partial<ReturnType<typeof findPluginEntry>> = {}) {
   return {
     configPath: "/test/.config/opencode/opencode.json",
-    entry: "opencode-antigravity-auth@1.2.6",
+    entry: "opencode-antigravity@1.2.6",
     pinnedVersion: "1.2.6",
     isPinned: true,
     ...overrides,
@@ -61,7 +61,7 @@ describe("Auto Update Checker", () => {
       vi.mocked(findPluginEntry).mockReturnValue(
         createPluginInfo({
           pinnedVersion: "1.2.7-beta.1",
-          entry: "opencode-antigravity-auth@1.2.7-beta.1",
+          entry: "opencode-antigravity@1.2.7-beta.1",
         }),
       );
       vi.mocked(getCachedVersion).mockReturnValue(null);
@@ -84,7 +84,7 @@ describe("Auto Update Checker", () => {
       vi.mocked(findPluginEntry).mockReturnValue(
         createPluginInfo({
           pinnedVersion: "2.0.0-alpha.3",
-          entry: "opencode-antigravity-auth@2.0.0-alpha.3",
+          entry: "opencode-antigravity@2.0.0-alpha.3",
         }),
       );
       vi.mocked(getCachedVersion).mockReturnValue(null);
@@ -103,7 +103,7 @@ describe("Auto Update Checker", () => {
       vi.mocked(findPluginEntry).mockReturnValue(
         createPluginInfo({
           pinnedVersion: "1.3.0-rc.1",
-          entry: "opencode-antigravity-auth@1.3.0-rc.1",
+          entry: "opencode-antigravity@1.3.0-rc.1",
         }),
       );
       vi.mocked(getCachedVersion).mockReturnValue(null);

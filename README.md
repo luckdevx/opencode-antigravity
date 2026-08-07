@@ -207,7 +207,7 @@ Add this to your `~/.config/opencode/opencode.json`:
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-antigravity-auth@latest"],
+  "plugin": ["opencode-antigravity@latest"],
   "provider": {
     "google": {
       "models": {
@@ -414,7 +414,7 @@ Invalid JSON payload received. Unknown name "parameters" at 'request.tools[0]'
 **Solutions:**
 1. **Update to latest beta:**
    ```json
-   { "plugin": ["opencode-antigravity-auth@beta"] }
+   { "plugin": ["opencode-antigravity@beta"] }
    ```
 
 2. **Disable MCP servers** one-by-one to find the problematic one
@@ -573,7 +573,7 @@ The correct key is `plugin` (singular):
 
 ```json
 {
-  "plugin": ["opencode-antigravity-auth@beta"]
+  "plugin": ["opencode-antigravity@beta"]
 }
 ```
 
@@ -584,7 +584,7 @@ The correct key is `plugin` (singular):
 ### Migrating Accounts Between Machines
 
 When copying `antigravity-accounts.json` to a new machine:
-1. Ensure the plugin is installed: `"plugin": ["opencode-antigravity-auth@beta"]`
+1. Ensure the plugin is installed: `"plugin": ["opencode-antigravity@beta"]`
 2. Copy `~/.config/opencode/antigravity-accounts.json`
 3. If you get "API key missing" error, the refresh token may be invalid — re-authenticate
 
@@ -602,7 +602,7 @@ DCP creates synthetic assistant messages that lack thinking blocks. **List this 
 ```json
 {
   "plugin": [
-    "opencode-antigravity-auth@latest",
+    "opencode-antigravity@latest",
     "@tarquinen/opencode-dcp@latest"
   ]
 }

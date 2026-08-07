@@ -127,7 +127,7 @@ body:
     id: plugin-version
     attributes:
       label: Plugin version
-      description: "Run: `npm list opencode-antigravity-auth -g 2>/dev/null || npm list opencode-antigravity-auth`"
+      description: "Run: `npm list opencode-antigravity -g 2>/dev/null || npm list opencode-antigravity`"
       placeholder: "e.g., 1.2.9-beta.5"
     validations:
       required: true
