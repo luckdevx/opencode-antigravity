@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **#89** - Interactive recovery when the accounts file is unreadable: the plugin now prompts `(r) Retry / (b) Backup & continue / (a) Abort` instead of failing silently, both at startup and during login. Backup moves the file aside (nothing is deleted); non-TTY environments abort safely without prompting.
+
 ## [1.6.1] - 2026-08-07
 
 ### Fixed

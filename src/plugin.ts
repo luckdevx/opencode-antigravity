@@ -71,7 +71,14 @@ import { createSyntheticErrorResponse, isEmptyResponseBody } from "./plugin/requ
 import { getHealthTracker, getTokenTracker, initHealthTracker, initTokenTracker } from "./plugin/rotation";
 import { executeSearch } from "./plugin/search";
 import { type OAuthListener, startOAuthListener } from "./plugin/server";
-import { clearAccounts, loadAccounts, saveAccounts, saveAccountsReplace } from "./plugin/storage";
+import {
+  AccountStorageUnreadableError,
+  clearAccounts,
+  loadAccounts,
+  saveAccounts,
+  saveAccountsReplace,
+} from "./plugin/storage";
+import { recoverUnreadableStorage } from "./plugin/storage-recovery";
 import { showToast as showToastMessage } from "./plugin/toast";
 import { AntigravityTokenRefreshError, refreshAccessToken } from "./plugin/token";
 import type {
@@ -850,8 +857,21 @@ export const createAntigravityPlugin =
           }
 
           // Note: AccountManager now ensures the current auth is always included in accounts
-
-          const accountManager = await AccountManager.loadFromDisk(auth);
+          let accountManager: AccountManager;
+          try {
+            accountManager = await AccountManager.loadFromDisk(auth);
+          } catch (error) {
+            if (!(error instanceof AccountStorageUnreadableError)) {
+              throw error;
+            }
+            const outcome = await recoverUnreadableStorage(error);
+            if (outcome.action === "abort") {
+              throw error;
+            }
+            // Storage was backed up (file moved aside) or became readable again —
+            // a fresh or recovered AccountManager is safe to build now.
+            accountManager = await AccountManager.loadFromDisk(auth);
+          }
           activeAccountManager = accountManager;
           if (accountManager.getAccountCount() > 0) {
             accountManager.requestSaveToDisk();
@@ -2668,7 +2688,7 @@ export const createAntigravityPlugin =
                     "success",
                   );
 
-                  try {
+                  const persistResult = async (): Promise<void> => {
                     if (refreshAccountIndex !== undefined) {
                       const currentStorage = await loadAccounts();
                       if (currentStorage) {
@@ -2697,7 +2717,26 @@ export const createAntigravityPlugin =
                       const isFirstAccount = accounts.length === 1;
                       await persistAccountPool([result], isFirstAccount && startFresh);
                     }
-                  } catch {}
+                  };
+
+                  try {
+                    await persistResult();
+                  } catch (error) {
+                    if (error instanceof AccountStorageUnreadableError) {
+                      const outcome = await recoverUnreadableStorage(error);
+                      if (outcome.action === "abort") {
+                        console.warn(
+                          `[opencode-antigravity] Account not saved (storage unreadable): ${error.message}`,
+                        );
+                      } else {
+                        // File was moved aside or became readable again — persist once more.
+                        try {
+                          await persistResult();
+                        } catch {}
+                      }
+                    }
+                    // Other errors are ignored so the login flow keeps moving.
+                  }
 
                   if (refreshAccountIndex !== undefined) {
                     break;
