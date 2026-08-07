@@ -251,10 +251,13 @@ function clearExpiredRateLimits(account: ManagedAccount): void {
 /**
  * Resolve the quota group for soft quota checks.
  *
- * When a model string is available, we can precisely determine the quota group.
+ * There are only two shared quota buckets upstream: "gemini" (all Gemini
+ * Pro/Flash/Lite models) and "claude" (Claude Opus/Sonnet + GPT-OSS).
+ *
+ * When a model string is available, we precisely determine the quota group.
  * When model is null/undefined, we fall back based on family:
  * - Claude → "claude" quota group
- * - Gemini → "gemini-pro" (conservative fallback; may misclassify flash models)
+ * - Gemini → "gemini"
  *
  * @param family - The model family ("claude" | "gemini")
  * @param model - Optional model string for precise resolution
@@ -264,7 +267,7 @@ export function resolveQuotaGroup(family: ModelFamily, model?: string | null): Q
   if (model) {
     return getModelFamily(model);
   }
-  return family === "claude" ? "claude" : "gemini-pro";
+  return family === "claude" ? "claude" : "gemini";
 }
 
 function isOverSoftQuotaThreshold(

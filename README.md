@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Enable Opencode to authenticate against **Antigravity** (Google's IDE) via OAuth so you can use Antigravity rate limits and access models like `gemini-3.1-pro` and `claude-opus-4-6-thinking` with your Google credentials.
+Enable Opencode to authenticate against **Antigravity** (Google's IDE) via OAuth so you can use Antigravity rate limits and access models like `gemini-3.6-flash`, `gemini-3.1-pro` and `claude-opus-4-6-thinking` with your Google credentials.
 
 ## Features
 
@@ -29,33 +29,28 @@ When configured:
 
 | Model | Family | Notes |
 |---|---|---|
+| `antigravity-gemini-3.6-flash` | Gemini Flash | **Newest & fastest Gemini** — beats 3.1 Pro on most tasks. 3 thinking tiers (low/medium/high), each mapped to a distinct upstream model ID |
 | `antigravity-gemini-3.5-flash` | Gemini Flash | 3 thinking tiers (low/medium/high), each mapped to distinct upstream model IDs |
-| `antigravity-gpt-oss-120b-medium` | GPT-OSS (new family) | Open-source OpenAI model, separate quota from Claude/Gemini |
+| `antigravity-gpt-oss-120b-medium` | GPT-OSS | Open-source OpenAI model; shares the Claude quota bucket |
 
-### Quota Display Grouped by Family
+### Quota Display — Shared Buckets Only
 
-Models in the quota check are now grouped by quota family, making it clear which models share quota:
+The quota check shows one progress bar per **shared quota bucket**, so it's simple and truthful:
 
 ```
   └─ Antigravity Quota
-     ├─ Claude
-     │  ├─ claude-opus-4-6-thinking   ████████████████████ 100%
-     │  └─ claude-sonnet-4-6          ████████████████████ 100%
-     ├─ Gemini Pro
-     │  ├─ gemini-3.1-pro-high        ████████████████████ 100%
-     │  └─ gemini-3.1-pro-low         ████████████████████ 100%
-     ├─ Gemini Flash
-     │  ├─ gemini-3-flash             ████████████████████ 100%
-     │  └─ gemini-3.5-flash-low       ████████████████████ 100%
-     └─ GPT-OSS
-        └─ gpt-oss-120b-medium        ████████████████████ 100%
+     ├─ Gemini  ████████░░░░░░░░░░░░  42%   (resets in 3h)
+     └─ Claude  ████████████████████ 100%
 ```
+
+- **Gemini** — every Gemini model (Pro/Flash/Lite) shares one bucket.
+- **Claude** — Claude Opus/Sonnet and GPT-OSS share one bucket.
+- Each bar shows the worst remaining quota in the group and when it resets.
 
 ## What You Get
 
-- **Claude Opus 4.6, Sonnet 4.6** and **Gemini 3.1 Pro/Flash** via Google OAuth
+- **Gemini 3.6 Flash, 3.5 Flash, 3.1 Pro** and **Claude Opus 4.6 / Sonnet 4.6** via Google OAuth
 - **Multi-account support** — add multiple Google accounts, auto-rotates when rate-limited
-- **Dual quota system** — access both Antigravity and Gemini CLI quotas from one plugin
 - **Thinking models** — extended thinking for Claude and Gemini 3 with configurable budgets
 - **Google Search grounding** — enable web search for Gemini models (auto or always-on)
 - **Auto-recovery** — handles session errors and tool failures automatically
@@ -168,29 +163,19 @@ opencode run "Hello" --model=google/antigravity-claude-opus-4-6-thinking --varia
 
 | Model | Variants | Notes |
 |-------|----------|-------|
+| `antigravity-gemini-3.6-flash` | low, medium, high | **Newest & fastest Gemini** — beats 3.1 Pro on most tasks |
+| `antigravity-gemini-3.5-flash` | low, medium, high | Gemini 3.5 Flash with thinking |
 | `antigravity-gemini-3-pro` | low, high | Gemini 3 Pro with thinking |
 | `antigravity-gemini-3.1-pro` | low, high | Gemini 3.1 Pro with thinking (rollout-dependent) |
 | `antigravity-gemini-3-flash` | minimal, low, medium, high | Gemini 3 Flash with thinking |
 | `antigravity-claude-sonnet-4-6` | — | Claude Sonnet 4.6 |
 | `antigravity-claude-opus-4-6-thinking` | low, max | Claude Opus 4.6 with extended thinking |
 
-**Gemini CLI quota** (separate from Antigravity; used when `cli_first` is true or as fallback):
-
-| Model | Notes |
-|-------|-------|
-| `gemini-2.5-flash` | Gemini 2.5 Flash |
-| `gemini-2.5-pro` | Gemini 2.5 Pro |
-| `gemini-3-flash-preview` | Gemini 3 Flash (preview) |
-| `gemini-3-pro-preview` | Gemini 3 Pro (preview) |
-| `gemini-3.1-pro-preview` | Gemini 3.1 Pro (preview, rollout-dependent) |
-| `gemini-3.1-pro-preview-customtools` | Gemini 3.1 Pro Preview Custom Tools (preview, rollout-dependent) |
-
 > **Routing Behavior:**
 > - **Antigravity-first (default):** Gemini models use Antigravity quota across accounts.
-> - **CLI-first (`cli_first: true`):** Gemini models use Gemini CLI quota first.
-> - When a Gemini quota pool is exhausted, the plugin automatically falls back to the other pool.
+> - When the Gemini quota pool is exhausted, the plugin automatically falls back to another account.
 > - Claude and image models always use Antigravity.
-> Model names are automatically transformed for the target API (e.g., `antigravity-gemini-3-flash` → `gemini-3-flash-preview` for CLI).
+> - Model names are automatically transformed for the target API.
 
 **Using variants:**
 ```bash
@@ -235,6 +220,26 @@ Add this to your `~/.config/opencode/opencode.json`:
           "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] },
           "variants": {
             "minimal": { "thinkingLevel": "minimal" },
+            "low": { "thinkingLevel": "low" },
+            "medium": { "thinkingLevel": "medium" },
+            "high": { "thinkingLevel": "high" }
+          }
+        },
+        "antigravity-gemini-3.5-flash": {
+          "name": "Gemini 3.5 Flash (Antigravity)",
+          "limit": { "context": 1048576, "output": 65536 },
+          "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] },
+          "variants": {
+            "low": { "thinkingLevel": "low" },
+            "medium": { "thinkingLevel": "medium" },
+            "high": { "thinkingLevel": "high" }
+          }
+        },
+        "antigravity-gemini-3.6-flash": {
+          "name": "Gemini 3.6 Flash (Antigravity)",
+          "limit": { "context": 1048576, "output": 65536 },
+          "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] },
+          "variants": {
             "low": { "thinkingLevel": "low" },
             "medium": { "thinkingLevel": "medium" },
             "high": { "thinkingLevel": "high" }
@@ -290,7 +295,7 @@ Add this to your `~/.config/opencode/opencode.json`:
 }
 ```
 
-> **Backward Compatibility:** Legacy model names with `antigravity-` prefix (e.g., `antigravity-gemini-3-flash`) still work. The plugin automatically handles model name transformation for both Antigravity and Gemini CLI APIs.
+> **Backward Compatibility:** Legacy model names with `antigravity-` prefix (e.g., `antigravity-gemini-3-flash`) still work. The plugin automatically handles model name transformation for the Antigravity API.
 
 </details>
 

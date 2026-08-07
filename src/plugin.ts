@@ -36,7 +36,12 @@ import { openBrowser, shouldSkipLocalServer } from "./plugin/env";
 import { EmptyResponseError } from "./plugin/errors";
 import { createLogger, initLogger } from "./plugin/logger";
 import { ensureProjectContext } from "./plugin/project";
-import { checkAccountsQuota, classifyQuotaGroup } from "./plugin/quota";
+import {
+  checkAccountsQuota,
+  classifyQuotaGroup,
+  type QuotaGroup,
+  type QuotaModelEntry,
+} from "./plugin/quota";
 import {
   extractRetryInfoFromBody,
   formatWaitTime,
@@ -2154,65 +2159,64 @@ export const createAntigravityPlugin =
                           return ` (resets in ${formatWaitTime(ms)})`;
                         };
 
-                        // Display Gemini CLI Quota first (as requested - swap order)
-                        const hasGeminiCli = res.geminiCliQuota && res.geminiCliQuota.models.length > 0;
-                        console.log(`\n  ┌─ Gemini CLI Quota`);
-                        if (!hasGeminiCli) {
-                          const errorMsg = res.geminiCliQuota?.error || "No Gemini CLI quota available";
-                          console.log(`  │  └─ ${errorMsg}`);
-                        } else {
-                          const models = res.geminiCliQuota!.models;
-                          models.forEach((model, idx) => {
-                            const isLast = idx === models.length - 1;
-                            const connector = isLast ? "└─" : "├─";
-                            const bar = createProgressBar(model.remainingFraction);
-                            const reset = formatReset(model.resetTime);
-                            const modelName = model.modelId.padEnd(29);
-                            console.log(`  │  ${connector} ${modelName} ${bar}${reset}`);
-                          });
-                        }
-
-                        // Display Antigravity Quota second, grouped by family
+                        // Display Antigravity Quota, one bar per shared quota bucket
                         const hasAntigravity = (res.quota?.models?.length ?? 0) > 0;
-                        console.log(`  │`);
-                        console.log(`  └─ Antigravity Quota`);
+                        console.log(`\n  └─ Antigravity Quota`);
                         if (!hasAntigravity) {
                           const errorMsg = res.quota?.error || "No quota information available";
                           console.log(`     └─ ${errorMsg}`);
                         } else {
                           const models = res.quota!.models;
-                          // Group models by quota family (claude / gemini-pro / gemini-flash)
-                          const familyLabels: Record<string, string> = {
-                            claude: "Claude",
-                            "gemini-pro": "Gemini Pro",
-                            "gemini-flash": "Gemini Flash",
-                            "gpt-oss": "GPT-OSS",
+                          // Group models by shared quota bucket (gemini / claude)
+                          const grouped: Record<QuotaGroup, QuotaModelEntry[]> = {
+                            gemini: [],
+                            claude: [],
                           };
-                          const familyOrder = ["claude", "gemini-pro", "gemini-flash", "gpt-oss"];
-                          const grouped: Record<string, typeof models> = {};
                           for (const m of models) {
-                            const fam = classifyQuotaGroup(m.modelId, m.displayName) ?? "other";
-                            if (!grouped[fam]) grouped[fam] = [];
+                            const fam = classifyQuotaGroup(m.modelId, m.displayName) ?? "gemini";
                             grouped[fam].push(m);
                           }
-                          const presentFamilies = familyOrder.filter((f) => grouped[f]);
-                          const otherFamilies = Object.keys(grouped).filter((f) => !familyOrder.includes(f));
-                          const allFamilies = [...presentFamilies, ...otherFamilies];
-                          allFamilies.forEach((fam, fIdx) => {
-                            const isLastFamily = fIdx === allFamilies.length - 1;
-                            const famConnector = isLastFamily ? "└─" : "├─";
-                            const label = familyLabels[fam] ?? fam;
-                            console.log(`     ${famConnector} ${label}`);
-                            const famModels = grouped[fam]!;
-                            const childPrefix = isLastFamily ? "   " : "   ";
-                            famModels.forEach((model, idx) => {
-                              const isLast = idx === famModels.length - 1;
-                              const connector = isLast ? "└─" : "├─";
-                              const bar = createProgressBar(model.remainingFraction);
-                              const reset = formatReset(model.resetTime);
-                              const modelName = model.modelId.padEnd(29);
-                              console.log(`     ${childPrefix} ${connector} ${modelName} ${bar}${reset}`);
-                            });
+                          const groupMeta: Record<
+                            QuotaGroup,
+                            { label: string; remaining?: number; resetTime?: string }
+                          > = {
+                            gemini: { label: "Gemini" },
+                            claude: { label: "Claude" },
+                          };
+                          for (const [fam, famModels] of Object.entries(grouped)) {
+                            if (famModels.length === 0) continue;
+                            // Group shows the worst (minimum) remaining fraction and
+                            // the reset of the model that exhausts first.
+                            let remaining: number | undefined;
+                            let resetTime: string | undefined;
+                            let resetTimestamp: number | null = null;
+                            for (const model of famModels) {
+                              if (model.remainingFraction !== undefined) {
+                                remaining =
+                                  remaining === undefined
+                                    ? model.remainingFraction
+                                    : Math.min(remaining, model.remainingFraction);
+                              }
+                              if (model.resetTime) {
+                                const ts = Date.parse(model.resetTime);
+                                if (Number.isFinite(ts) && (resetTimestamp === null || ts < resetTimestamp)) {
+                                  resetTimestamp = ts;
+                                  resetTime = model.resetTime;
+                                }
+                              }
+                            }
+                            groupMeta[fam as QuotaGroup].remaining = remaining;
+                            groupMeta[fam as QuotaGroup].resetTime = resetTime;
+                          }
+                          const groupOrder: QuotaGroup[] = ["gemini", "claude"];
+                          groupOrder.forEach((fam, fIdx) => {
+                            const meta = groupMeta[fam];
+                            if (grouped[fam].length === 0) return;
+                            const isLast = fIdx === groupOrder.length - 1;
+                            const connector = isLast ? "└─" : "├─";
+                            const bar = createProgressBar(meta.remaining);
+                            const reset = formatReset(meta.resetTime);
+                            console.log(`     ${connector} ${meta.label} ${bar}${reset}`);
                           });
                         }
                         console.log("");

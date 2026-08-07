@@ -1839,8 +1839,9 @@ describe("AccountManager", () => {
 describe("resolveQuotaGroup", () => {
   it("returns model-based quota group when model is provided", () => {
     expect(resolveQuotaGroup("claude", "claude-opus-4-6-thinking")).toBe("claude");
-    expect(resolveQuotaGroup("gemini", "gemini-2.5-pro")).toBe("gemini-pro");
-    expect(resolveQuotaGroup("gemini", "gemini-2.5-flash")).toBe("gemini-flash");
+    expect(resolveQuotaGroup("gemini", "gemini-2.5-pro")).toBe("gemini");
+    expect(resolveQuotaGroup("gemini", "gemini-2.5-flash")).toBe("gemini");
+    expect(resolveQuotaGroup("gemini", "gpt-oss-120b-medium")).toBe("claude");
   });
 
   it("falls back to claude for claude family when no model", () => {
@@ -1848,14 +1849,15 @@ describe("resolveQuotaGroup", () => {
     expect(resolveQuotaGroup("claude", undefined)).toBe("claude");
   });
 
-  it("falls back to gemini-pro for gemini family when no model", () => {
-    expect(resolveQuotaGroup("gemini", null)).toBe("gemini-pro");
-    expect(resolveQuotaGroup("gemini", undefined)).toBe("gemini-pro");
+  it("falls back to gemini for gemini family when no model", () => {
+    expect(resolveQuotaGroup("gemini", null)).toBe("gemini");
+    expect(resolveQuotaGroup("gemini", undefined)).toBe("gemini");
   });
 
   it("model takes precedence over family", () => {
     // Even if family says claude, model determines the quota group
-    expect(resolveQuotaGroup("gemini", "gemini-2.5-flash")).toBe("gemini-flash");
-    expect(resolveQuotaGroup("gemini", "gemini-3-pro")).toBe("gemini-pro");
+    expect(resolveQuotaGroup("gemini", "gemini-2.5-flash")).toBe("gemini");
+    expect(resolveQuotaGroup("gemini", "gemini-3-pro")).toBe("gemini");
+    expect(resolveQuotaGroup("gemini", "claude-sonnet-4-6")).toBe("claude");
   });
 });

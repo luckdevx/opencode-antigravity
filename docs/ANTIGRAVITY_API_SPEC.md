@@ -82,7 +82,9 @@ Accept: text/event-stream
 | Claude Opus 4.6 Thinking | `claude-opus-4-6-thinking` | Anthropic | ✅ Verified |
 | Gemini 3 Pro High | `gemini-3-pro-high` | Google | ✅ Verified |
 | Gemini 3 Pro Low | `gemini-3-pro-low` | Google | ✅ Verified |
-| GPT-OSS 120B Medium | `gpt-oss-120b-medium` | Other | ✅ Verified |
+| Gemini 3.5 Flash (Medium) | `gemini-3.5-flash-low` | Google | ✅ Verified |
+| Gemini 3.6 Flash (Low/Medium/High) | `gemini-3.6-flash-low`/`-medium`/`-high` | Google | ✅ Verified |
+| GPT-OSS 120B Medium | `gpt-oss-120b-medium` | Other (shares Claude bucket) | ✅ Verified |
 
 ---
 

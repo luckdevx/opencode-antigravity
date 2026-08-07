@@ -99,46 +99,29 @@ describe("quota filtering with real probe data", () => {
     "gpt-oss-120b-medium": { displayName: "GPT-OSS 120B (Medium)", quotaInfo: { remainingFraction: 1 } },
   };
 
-  it("Antigravity quota: keeps claude + gemini-3 models whose base matches a non-hidden model", () => {
+  it("Antigravity quota: keeps models whose base matches a non-hidden model", () => {
     const bases = getAllowedUpstreamBases()!;
     const kept: string[] = [];
     for (const [name, entry] of Object.entries(probeModels)) {
-      // classifyQuotaGroup: only claude/gemini-3 matter for the Antigravity block
+      // classifyQuotaGroup: gemini/claude are the two Antigravity quota buckets
       const lower = `${name} ${entry.displayName ?? ""}`.toLowerCase();
-      const isClaude = lower.includes("claude");
-      const isGemini3 = lower.includes("gemini-3") || lower.includes("gemini 3");
-      if (!isClaude && !isGemini3) continue;
+      const isClaude = lower.includes("claude") || lower.includes("gpt");
+      const isGemini = lower.includes("gemini-2") || lower.includes("gemini-3") || lower.includes("gemini 3");
+      if (!isClaude && !isGemini) continue;
       if (bases.has(getModelBaseName(name))) kept.push(name);
     }
-    // Claude + Gemini 3.1 Pro + Gemini 3 Flash survive
+    // Claude + Gemini 3 Pro/Flash survive
     expect(kept).toContain("claude-sonnet-4-6");
     expect(kept).toContain("claude-opus-4-6-thinking");
     expect(kept).toContain("gemini-3.1-pro-high");
     expect(kept).toContain("gemini-3.1-pro-low");
     expect(kept).toContain("gemini-3-flash");
-    // gemini-2.5-pro is NOT in the Antigravity block (not a gemini-3 model)
+    // GPT-OSS is classified under the claude bucket and is not hidden
+    expect(kept).toContain("gpt-oss-120b-medium");
+    // gemini-2.5-pro is hidden, so filtered out
     expect(kept).not.toContain("gemini-2.5-pro");
     // unrelated flash-lite / pro-agent filtered out (base mismatch)
     expect(kept).not.toContain("gemini-3.1-flash-lite");
     expect(kept).not.toContain("gemini-pro-agent");
-  });
-
-  it("Gemini CLI quota: gemini-2.5-pro filtered out (hidden)", () => {
-    const bases = getAllowedUpstreamBases()!;
-    const cliBuckets = [
-      { modelId: "gemini-2.5-flash" },
-      { modelId: "gemini-2.5-flash-lite" },
-      { modelId: "gemini-2.5-pro" },
-      { modelId: "gemini-3.1-flash-lite" },
-    ];
-    const kept: string[] = [];
-    for (const b of cliBuckets) {
-      // aggregateGeminiCliQuota relevance filter
-      const relevant = b.modelId.startsWith("gemini-3-") || b.modelId === "gemini-2.5-pro";
-      if (!relevant) continue;
-      if (bases.has(getModelBaseName(b.modelId))) kept.push(b.modelId);
-    }
-    // gemini-2.5-pro is hidden, so nothing passes both filters
-    expect(kept).toEqual([]);
   });
 });

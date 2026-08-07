@@ -286,19 +286,16 @@ export function resolveModelWithTier(
 
 /**
  * Gets the model family for routing decisions.
+ * All Gemini models (Pro/Flash/Lite) share one family; Claude and GPT-OSS
+ * are grouped under "claude" because they share the same Antigravity quota
+ * bucket upstream.
  */
-export function getModelFamily(model: string): "claude" | "gemini-flash" | "gemini-pro" | "gpt-oss" {
+export function getModelFamily(model: string): "gemini" | "claude" {
   const lower = model.toLowerCase();
-  if (lower.includes("claude")) {
+  if (lower.includes("claude") || lower.includes("gpt")) {
     return "claude";
   }
-  if (lower.includes("gpt")) {
-    return "gpt-oss";
-  }
-  if (lower.includes("flash")) {
-    return "gemini-flash";
-  }
-  return "gemini-pro";
+  return "gemini";
 }
 
 /**
