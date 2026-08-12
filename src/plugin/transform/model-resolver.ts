@@ -48,6 +48,12 @@ export const MODEL_ALIASES: Record<string, string> = {
   "gemini-3-flash-medium": "gemini-3-flash",
   "gemini-3-flash-high": "gemini-3-flash",
 
+  // Marketing aliases - map to real API model names
+  "gemini-omni-flash-preview": "gemini-3-flash",
+  "gemini-omni-flash": "gemini-3-flash",
+  "gemini-omni-pro-preview": "gemini-3-pro",
+  "gemini-omni-pro": "gemini-3-pro",
+
   // Gemini 3.5 Flash - upstream uses tiered names (no bare model exists).
   // Each tier maps to a distinct upstream model ID (probed 200 OK).
   "gemini-3.5-flash": "gemini-3.5-flash-low", // default → Medium tier
