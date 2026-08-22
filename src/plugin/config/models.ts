@@ -88,6 +88,18 @@ export const OPENCODE_MODEL_DEFINITIONS: OpencodeModelDefinitions = {
       high: { thinkingLevel: "high" },
     },
   },
+  "antigravity-gemini-3.7-flash": {
+    name: "Gemini 3.7 Flash (Antigravity)",
+    limit: { context: 1048576, output: 65536 },
+    modalities: DEFAULT_MODALITIES,
+    // Upstream exposes a single tiered model ID - every variant resolves to it
+    // and the thinking level is sent via generationConfig.thinkingLevel.
+    variants: {
+      low: { thinkingLevel: "low" },
+      medium: { thinkingLevel: "medium" },
+      high: { thinkingLevel: "high" },
+    },
+  },
   "antigravity-claude-sonnet-4-6": {
     name: "Claude Sonnet 4.6 (Antigravity)",
     limit: { context: 200000, output: 64000 },

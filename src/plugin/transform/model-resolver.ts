@@ -62,6 +62,14 @@ export const MODEL_ALIASES: Record<string, string> = {
   "gemini-3.6-flash-medium": "gemini-3.6-flash-medium",
   "gemini-3.6-flash-high": "gemini-3.6-flash-high",
 
+  // Gemini 3.7 Flash - upstream uses a single tiered model ID
+  // (no bare or per-tier names exist; probed: bare/low/medium/high = 404,
+  //  gemini-3.7-flash-tiered = 429 quota-valid). Tier goes via thinkingLevel.
+  "gemini-3.7-flash": "gemini-3.7-flash-tiered",
+  "gemini-3.7-flash-low": "gemini-3.7-flash-tiered",
+  "gemini-3.7-flash-medium": "gemini-3.7-flash-tiered",
+  "gemini-3.7-flash-high": "gemini-3.7-flash-tiered",
+
   // Claude proxy names (gemini- prefix for compatibility)
   "gemini-claude-opus-4-6-thinking-low": "claude-opus-4-6-thinking",
   "gemini-claude-opus-4-6-thinking-medium": "claude-opus-4-6-thinking",
@@ -187,10 +195,10 @@ export function resolveModelWithTier(
   const explicitQuota = isAntigravity || isImageModel;
 
   const isGemini3 = modelWithoutQuota.toLowerCase().startsWith("gemini-3");
-  // Gemini 3.5 Flash and Gemini 3.6 Flash use tiered upstream model names
+  // Gemini 3.5/3.6/3.7 Flash use tiered upstream model names
   // (no bare model exists), so they must go through MODEL_ALIASES instead of
   // the skipAlias bare-name path. `gemini-3-flash` itself still has a bare model.
-  const isTieredGeminiFlash = /^gemini-3\.(5|6)-flash/i.test(modelWithoutQuota);
+  const isTieredGeminiFlash = /^gemini-3\.(5|6|7)-flash/i.test(modelWithoutQuota);
   const skipAlias = isAntigravity && isGemini3 && !isTieredGeminiFlash;
 
   // For Antigravity Gemini 3 Pro models without explicit tier, append default tier
@@ -423,6 +431,12 @@ export function resolveModelWithVariant(
         base.thinkingLevel = variantConfig.thinkingLevel;
         base.configSource = "variant";
       }
+      return base;
+    }
+    if (lower.includes("gemini-3.7") && lower.includes("flash")) {
+      // Single tiered upstream ID - tier goes via thinkingLevel only.
+      base.thinkingLevel = variantConfig.thinkingLevel;
+      base.configSource = "variant";
       return base;
     }
   }
