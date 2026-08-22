@@ -19,7 +19,8 @@ describe("verification-probe helpers", () => {
 
   describe("normalizeGoogleVerificationUrl", () => {
     it("accepts valid accounts.google.com URLs", () => {
-      const url = "https://accounts.google.com/signin/continue?continue=https%3A%2F%2Fconsole.cloud.google.com";
+      const url =
+        "https://accounts.google.com/signin/continue?continue=https%3A%2F%2Fconsole.cloud.google.com";
       expect(normalizeGoogleVerificationUrl(url)).toBe(url);
     });
 
@@ -55,7 +56,9 @@ describe("verification-probe helpers", () => {
         error: {
           code: 403,
           message: "Account verification required",
-          details: [{ reason: "validation_required", url: "https://accounts.google.com/signin/continue?plt=1" }],
+          details: [
+            { reason: "validation_required", url: "https://accounts.google.com/signin/continue?plt=1" },
+          ],
         },
       });
 
@@ -65,7 +68,8 @@ describe("verification-probe helpers", () => {
     });
 
     it("detects validation_required in raw text with escaped characters", () => {
-      const rawText = "data: {\"error\":\"validation_required\",\"url\":\"https:\\u002f\\u002faccounts.google.com\\u002fverify\"}";
+      const rawText =
+        'data: {"error":"validation_required","url":"https:\\u002f\\u002faccounts.google.com\\u002fverify"}';
       const extracted = extractVerificationErrorDetails(rawText);
       expect(extracted.validationRequired).toBe(true);
     });
