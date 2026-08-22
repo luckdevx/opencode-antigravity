@@ -159,6 +159,8 @@ const ANTIGRAVITY_PREFIX_REGEX = /^antigravity-/i;
 const PREVIEW_CUSTOMTOOLS_SUFFIX_REGEX = /-preview-customtools$/i;
 const PREVIEW_SUFFIX_REGEX = /-preview$/i;
 const TIER_SUFFIX_REGEX = /-(minimal|low|medium|high)$/i;
+// Gemini 3.7 Flash upstream exposes a single "-tiered" model ID
+const TIERED_SUFFIX_REGEX = /-tiered$/i;
 
 /**
  * Whether a model supports thinking tier suffixes (-low/-medium/-high/-minimal).
@@ -187,12 +189,14 @@ function supportsThinkingTiers(model: string): boolean {
  *   "gemini-3.1-pro-high" (upstream)      -> "gemini-3.1-pro"
  *   "antigravity-claude-opus-4-6-thinking" -> "claude-opus-4-6-thinking"
  *   "antigravity-gpt-oss-120b-medium"     -> "gpt-oss-120b-medium" (medium is part of name)
+ *   "gemini-3.7-flash-tiered" (upstream)  -> "gemini-3.7-flash"
  */
 export function getModelBaseName(model: string): string {
   const stripped = model
     .replace(ANTIGRAVITY_PREFIX_REGEX, "")
     .replace(PREVIEW_CUSTOMTOOLS_SUFFIX_REGEX, "")
-    .replace(PREVIEW_SUFFIX_REGEX, "");
+    .replace(PREVIEW_SUFFIX_REGEX, "")
+    .replace(TIERED_SUFFIX_REGEX, "");
   if (supportsThinkingTiers(stripped)) {
     return stripped.replace(TIER_SUFFIX_REGEX, "");
   }

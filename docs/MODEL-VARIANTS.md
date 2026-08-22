@@ -50,14 +50,14 @@ The plugin accepts different variant formats depending on the model family:
 
 Gemini 3 models use string-based thinking levels. Available levels differ by model:
 
-| Level | Flash | Pro | Description |
-|-------|-------|-----|-------------|
-| `minimal` | ✅ | ❌ | Minimal thinking, lowest latency |
-| `low` | ✅ | ✅ | Light thinking |
-| `medium` | ✅ | ❌ | Balanced thinking |
-| `high` | ✅ | ✅ | Maximum thinking (default) |
+| Level | Flash (bare `gemini-3-flash`) | Flash Tiered (3.5 / 3.6 / 3.7) | Pro | Description |
+|-------|-------------------------------|--------------------------------|-----|-------------|
+| `minimal` | ✅ | ❌ | ❌ | Minimal thinking, lowest latency (only on bare `gemini-3-flash`) |
+| `low` | ✅ | ✅ | ✅ | Light thinking |
+| `medium` | ✅ | ✅ | ❌ | Balanced thinking |
+| `high` | ✅ | ✅ | ✅ | Maximum thinking (default) |
 
-> **Note:** The API rejects invalid levels (e.g., `"minimal"` on Pro). Configure variants accordingly.
+> **Note:** The API rejects invalid levels (e.g., `"minimal"` on Pro or on 3.5/3.6/3.7 tiered models). Configure variants accordingly. For `antigravity-gemini-3.7-flash`, all variants resolve to the single upstream ID `gemini-3.7-flash-tiered` with the tier sent via `generationConfig.thinkingLevel`.
 
 ### Gemini 3 Pro Example
 
