@@ -34,9 +34,7 @@ export type VerificationStoredAccount = {
 export function decodeEscapedText(input: string): string {
   return input
     .replace(/&amp;/g, "&")
-    .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex: string) =>
-      String.fromCharCode(Number.parseInt(hex, 16)),
-    );
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex: string) => String.fromCharCode(Number.parseInt(hex, 16)));
 }
 
 export function normalizeGoogleVerificationUrl(rawUrl: string): string | undefined {
@@ -57,11 +55,7 @@ export function normalizeGoogleVerificationUrl(rawUrl: string): string | undefin
 
 export function selectBestVerificationUrl(urls: string[]): string | undefined {
   const unique = Array.from(
-    new Set(
-      urls
-        .map((url) => normalizeGoogleVerificationUrl(url))
-        .filter(Boolean) as string[],
-    ),
+    new Set(urls.map((url) => normalizeGoogleVerificationUrl(url)).filter(Boolean) as string[]),
   );
   if (unique.length === 0) {
     return undefined;
@@ -137,9 +131,7 @@ export function extractVerificationErrorDetails(bodyText: string): {
       }
       if (
         !message &&
-        (lowerKey.includes("message") ||
-          lowerKey.includes("detail") ||
-          lowerKey.includes("description"))
+        (lowerKey.includes("message") || lowerKey.includes("detail") || lowerKey.includes("description"))
       ) {
         message = normalizedValue;
       }
@@ -188,10 +180,7 @@ export function extractVerificationErrorDetails(bodyText: string): {
     const fallback = decodedBody
       .split("\n")
       .map((line) => line.trim())
-      .find(
-        (line) =>
-          line && !line.startsWith("data:") && /(verify|validation|required)/i.test(line),
-      );
+      .find((line) => line && !line.startsWith("data:") && /(verify|validation|required)/i.test(line));
     if (fallback) {
       message = fallback;
     }
@@ -309,8 +298,7 @@ export async function verifyAccountAccess(
     };
   }
 
-  const fallbackMessage =
-    extracted.message ?? `Request failed (${response.status} ${response.statusText}).`;
+  const fallbackMessage = extracted.message ?? `Request failed (${response.status} ${response.statusText}).`;
   return {
     status: "error",
     message: fallbackMessage,
@@ -355,9 +343,7 @@ export async function promptAccountIndexForVerification(
 }
 
 export async function promptOpenVerificationUrl(): Promise<boolean> {
-  const answer = (
-    await promptCliText("Open verification URL in your browser now? [Y/n]: ")
-  )
+  const answer = (await promptCliText("Open verification URL in your browser now? [Y/n]: "))
     .trim()
     .toLowerCase();
   return answer === "" || answer === "y" || answer === "yes";

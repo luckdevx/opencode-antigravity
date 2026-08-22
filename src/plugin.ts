@@ -2,11 +2,9 @@ import { tool } from "@opencode-ai/plugin";
 import type { AntigravityTokenExchangeResult } from "./antigravity/oauth";
 import { authorizeAntigravity, exchangeAntigravity } from "./antigravity/oauth";
 import {
-  ANTIGRAVITY_DEFAULT_PROJECT_ID,
   ANTIGRAVITY_ENDPOINT_FALLBACKS,
   ANTIGRAVITY_ENDPOINT_PROD,
   ANTIGRAVITY_PROVIDER_ID,
-  getAntigravityHeaders,
   type HeaderStyle,
 } from "./constants";
 import { createAutoUpdateCheckerHook } from "./hooks/auto-update-checker";
@@ -17,7 +15,7 @@ import {
   computeSoftQuotaCacheTtlMs,
   parseRateLimitReason,
 } from "./plugin/accounts";
-import { accessTokenExpired, formatRefreshParts, isOAuthAuth, parseRefreshParts } from "./plugin/auth";
+import { accessTokenExpired, isOAuthAuth, parseRefreshParts } from "./plugin/auth";
 import { initDiskSignatureCache } from "./plugin/cache";
 import { promptAddAnotherAccount, promptLoginMode, promptProjectId } from "./plugin/cli";
 import { initRuntimeConfig, loadConfigWithWarnings } from "./plugin/config";
@@ -35,23 +33,13 @@ import {
 import { openBrowser, shouldSkipLocalServer } from "./plugin/env";
 import { EmptyResponseError } from "./plugin/errors";
 import { createLogger, initLogger } from "./plugin/logger";
-import { ensureProjectContext } from "./plugin/project";
 import {
   extractOAuthCallbackParams,
   getStateFromAuthorizationUrl,
   parseOAuthCallbackInput,
   promptManualOAuthInput,
 } from "./plugin/oauth-cli";
-import {
-  clearStoredAccountVerificationRequired,
-  extractVerificationErrorDetails,
-  markStoredAccountVerificationRequired,
-  promptAccountIndexForVerification,
-  promptOpenVerificationUrl,
-  type VerificationProbeResult,
-  type VerificationStoredAccount,
-  verifyAccountAccess,
-} from "./plugin/verification-probe";
+import { ensureProjectContext } from "./plugin/project";
 import {
   checkAccountsQuota,
   classifyQuotaGroup,
@@ -115,6 +103,14 @@ import {
   toUrlString,
   toWarmupStreamUrl,
 } from "./plugin/url-routing";
+import {
+  clearStoredAccountVerificationRequired,
+  extractVerificationErrorDetails,
+  markStoredAccountVerificationRequired,
+  promptAccountIndexForVerification,
+  promptOpenVerificationUrl,
+  verifyAccountAccess,
+} from "./plugin/verification-probe";
 import { initAntigravityVersion } from "./plugin/version";
 import { clearWarmupAttempt, markWarmupSuccess, trackWarmupAttempt } from "./plugin/warmup";
 

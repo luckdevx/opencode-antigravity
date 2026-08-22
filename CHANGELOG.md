@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.6.3] - 2026-08-22
 
 ### Added
 
@@ -9,6 +9,12 @@
 ### Changed
 
 - Config problems are now surfaced to the user instead of silently falling back to defaults: a warning toast shows invalid values, invalid JSON, and unknown (likely typo'd) keys per config file. Valid keys keep applying; only the affected file falls back to defaults.
+- Release pipeline hardened: CI runs Biome lint, `prepublishOnly` runs the full verification gate (lint + typecheck + tests + build), and Vitest coverage ratchet is enforced in CI.
+- Refactored `src/plugin.ts`: extracted OAuth CLI helpers (`src/plugin/oauth-cli.ts`), verification probe heuristics (`src/plugin/verification-probe.ts`) and prompt utility (`src/plugin/ui/prompt.ts`), reducing `plugin.ts` by ~460 lines without public API changes.
+
+### Fixed
+
+- `getModelBaseName`: strip `-tiered` suffix so `aggregateQuota` maps upstream `gemini-3.7-flash-tiered` to canonical `gemini-3.7-flash`, preserving quota display when `hidden_models` is active.
 
 ## [1.6.2] - 2026-08-07
 
