@@ -284,8 +284,17 @@ export function normalizeGeminiTools(payload: RequestPayload): {
       `tool-${toolIndex}`;
 
     // Always update function.input_schema with transformed schema
+    // CRITICAL: This must happen BEFORE custom creation so function tools
+    // keep their schema even after custom is stripped (line 332).
     if (newTool.function && schema) {
       (newTool.function as Record<string, unknown>).input_schema = schema;
+    } else if (newTool.function && !schema) {
+      // Ensure function always has a schema even if source had none
+      (newTool.function as Record<string, unknown>).input_schema = {
+        type: "OBJECT",
+        properties: {},
+      };
+      toolDebugMissing += 1;
     }
 
     // Always update custom.input_schema with transformed schema
@@ -293,7 +302,7 @@ export function normalizeGeminiTools(payload: RequestPayload): {
       (newTool.custom as Record<string, unknown>).input_schema = schema;
     }
 
-    // Create custom from function if missing
+    // Create custom from function if missing (temporary, stripped later)
     if (!newTool.custom && newTool.function) {
       const fn = newTool.function as Record<string, unknown>;
       newTool.custom = {
