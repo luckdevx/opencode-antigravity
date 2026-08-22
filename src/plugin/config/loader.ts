@@ -20,9 +20,34 @@ const log = createLogger("config");
 // =============================================================================
 
 /**
- * Load and parse a config file, returning null if not found or invalid.
+ * Result of loading the configuration, including human-readable problems found
+ * in user/project config files. `warnings` is empty when every file was valid.
  */
-function loadConfigFile(path: string): Partial<AntigravityConfig> | null {
+export interface ConfigLoadResult {
+  config: AntigravityConfig;
+  /**
+   * One entry per problem (invalid values, invalid JSON, unknown keys).
+   * The affected settings fall back to defaults; valid keys still apply.
+   */
+  warnings: string[];
+}
+
+/** Cap per-file issue lists so toasts stay readable. */
+const MAX_ISSUES_PER_FILE = 5;
+
+/**
+ * Keys accepted by the schema - anything else in a config file is a likely
+ * typo and is reported (and ignored) instead of being silently stripped.
+ */
+function getSchemaKeys(): Set<string> {
+  return new Set(Object.keys(AntigravityConfigSchema.shape));
+}
+
+/**
+ * Load and parse a config file, returning null if not found or invalid.
+ * Appends a human-readable warning for every problem found.
+ */
+function loadConfigFile(path: string, warnings: string[]): Partial<AntigravityConfig> | null {
   try {
     if (!existsSync(path)) {
       return null;
@@ -35,19 +60,36 @@ function loadConfigFile(path: string): Partial<AntigravityConfig> | null {
     const result = AntigravityConfigSchema.partial().safeParse(rawConfig);
 
     if (!result.success) {
-      log.warn("Config validation error", {
-        path,
-        issues: result.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", "),
-      });
+      const issueText = result.error.issues
+        .map((i) => `${i.path.join(".")}: ${i.message}`)
+        .slice(0, MAX_ISSUES_PER_FILE)
+        .join("; ");
+      log.warn("Config validation error", { path, issues: issueText });
+      warnings.push(`Invalid value(s) in ${path}: ${issueText}`);
       return null;
+    }
+
+    // Valid values, but flag unknown keys (likely typos) instead of dropping
+    // them silently. Known keys keep applying.
+    if (rawConfig && typeof rawConfig === "object" && !Array.isArray(rawConfig)) {
+      const knownKeys = getSchemaKeys();
+      const unknownKeys = Object.keys(rawConfig).filter((key) => !knownKeys.has(key));
+      if (unknownKeys.length > 0) {
+        log.warn("Unknown config keys ignored", { path, keys: unknownKeys });
+        warnings.push(`Unknown key(s) in ${path} (ignored): ${unknownKeys.join(", ")}`);
+      }
     }
 
     return result.data;
   } catch (error) {
     if (error instanceof SyntaxError) {
+      const message = `Invalid JSON in ${path}: ${error.message}`;
       log.warn("Invalid JSON in config file", { path, error: error.message });
+      warnings.push(message);
     } else {
+      const message = `Could not read config file ${path}: ${String(error)}`;
       log.warn("Failed to load config file", { path, error: String(error) });
+      warnings.push(message);
     }
     return null;
   }
@@ -75,30 +117,43 @@ function mergeConfigs(base: AntigravityConfig, override: Partial<AntigravityConf
 // =============================================================================
 
 /**
- * Load the complete configuration.
+ * Load the complete configuration together with any problems found in the
+ * config files. Use this when you can surface warnings to the user (toast,
+ * console); `loadConfig()` is the shorthand that discards them.
  *
  * @param directory - The project directory (for project-level config)
- * @returns Fully resolved configuration
  */
-export function loadConfig(directory: string): AntigravityConfig {
+export function loadConfigWithWarnings(directory: string): ConfigLoadResult {
+  const warnings: string[] = [];
+
   // Start with defaults
   let config: AntigravityConfig = { ...DEFAULT_CONFIG };
 
   // Load user config file (if exists)
   const userConfigPath = getUserConfigPath();
-  const userConfig = loadConfigFile(userConfigPath);
+  const userConfig = loadConfigFile(userConfigPath, warnings);
   if (userConfig) {
     config = mergeConfigs(config, userConfig);
   }
 
   // Load project config file (if exists) - overrides user config
   const projectConfigPath = getProjectConfigPath(directory);
-  const projectConfig = loadConfigFile(projectConfigPath);
+  const projectConfig = loadConfigFile(projectConfigPath, warnings);
   if (projectConfig) {
     config = mergeConfigs(config, projectConfig);
   }
 
-  return config;
+  return { config, warnings };
+}
+
+/**
+ * Load the complete configuration.
+ *
+ * @param directory - The project directory (for project-level config)
+ * @returns Fully resolved configuration
+ */
+export function loadConfig(directory: string): AntigravityConfig {
+  return loadConfigWithWarnings(directory).config;
 }
 
 /**

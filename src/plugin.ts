@@ -20,7 +20,7 @@ import {
 import { accessTokenExpired, formatRefreshParts, isOAuthAuth, parseRefreshParts } from "./plugin/auth";
 import { initDiskSignatureCache } from "./plugin/cache";
 import { promptAddAnotherAccount, promptLoginMode, promptProjectId } from "./plugin/cli";
-import { initRuntimeConfig, loadConfig } from "./plugin/config";
+import { initRuntimeConfig, loadConfigWithWarnings } from "./plugin/config";
 import {
   getLogFilePath,
   initializeDebug,
@@ -656,7 +656,7 @@ export const createAntigravityPlugin =
   (providerId: string) =>
   async ({ client, directory }: PluginContext): Promise<PluginResult> => {
     // Load configuration from files and environment variables
-    const config = loadConfig(directory);
+    const { config, warnings: configWarnings } = loadConfigWithWarnings(directory);
     initRuntimeConfig(config);
 
     // Cached getAuth function for tool access
@@ -667,6 +667,19 @@ export const createAntigravityPlugin =
 
     // Initialize structured logger for TUI integration
     initLogger(client);
+
+    // Surface config problems immediately - silent fallback to defaults is a
+    // support trap. Always shown (like recovery toasts), regardless of quiet_mode.
+    if (configWarnings.length > 0) {
+      const firstWarning = configWarnings[0];
+      const extraCount = configWarnings.length - 1;
+      await showToastMessage(
+        client,
+        extraCount > 0 ? `${firstWarning} (+${extraCount} more, see logs)` : (firstWarning ?? ""),
+        "warning",
+        { title: "antigravity config" },
+      );
+    }
 
     // Fetch latest Antigravity version from remote API (non-blocking, falls back to hardcoded)
     await initAntigravityVersion();

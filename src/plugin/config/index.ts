@@ -13,10 +13,12 @@
  */
 
 export {
+  type ConfigLoadResult,
   configExists,
   getKeepThinking,
   initRuntimeConfig,
   loadConfig,
+  loadConfigWithWarnings,
 } from "./loader";
 export {
   getConfigDir,

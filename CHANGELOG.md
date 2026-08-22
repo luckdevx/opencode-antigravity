@@ -6,6 +6,10 @@
 
 - Gemini 3.7 Flash support: `antigravity-gemini-3.7-flash` (low/medium/high). Upstream exposes a single tiered model ID (`gemini-3.7-flash-tiered`) — every tier resolves to it and the thinking level is sent via `generationConfig.thinkingLevel`. Registered in the model catalog so it appears in `opencode.json` auto-configuration and documented in README.
 
+### Changed
+
+- Config problems are now surfaced to the user instead of silently falling back to defaults: a warning toast shows invalid values, invalid JSON, and unknown (likely typo'd) keys per config file. Valid keys keep applying; only the affected file falls back to defaults.
+
 ## [1.6.2] - 2026-08-07
 
 ### Added
