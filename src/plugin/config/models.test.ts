@@ -23,6 +23,7 @@ describe("OPENCODE_MODEL_DEFINITIONS", () => {
       "antigravity-gemini-3.5-flash",
       "antigravity-gemini-3.6-flash",
       "antigravity-gemini-3.7-flash",
+      "antigravity-gemini-3.8-flash",
       "antigravity-gpt-oss-120b-medium",
       "gemini-2.5-flash",
       "gemini-2.5-pro",
@@ -58,6 +59,13 @@ describe("OPENCODE_MODEL_DEFINITIONS", () => {
       medium: { thinkingLevel: "medium" },
       high: { thinkingLevel: "high" },
     });
+
+    // Gemini 3.8 Flash: same pattern as 3.7.
+    expect(getModel("antigravity-gemini-3.8-flash").variants).toEqual({
+      low: { thinkingLevel: "low" },
+      medium: { thinkingLevel: "medium" },
+      high: { thinkingLevel: "high" },
+    });
   });
 
   it("defines thinking budget variants for Claude thinking models", () => {
@@ -84,5 +92,11 @@ describe("getModelBaseName", () => {
     expect(getModelBaseName("gemini-3.7-flash-tiered")).toBe("gemini-3.7-flash");
     expect(getModelBaseName("antigravity-gemini-3.7-flash")).toBe("gemini-3.7-flash");
     expect(getModelBaseName("gemini-3.7-flash-tiered-preview")).toBe("gemini-3.7-flash");
+  });
+
+  it("strips -tiered from Gemini 3.8 Flash upstream IDs", () => {
+    expect(getModelBaseName("gemini-3.8-flash-tiered")).toBe("gemini-3.8-flash");
+    expect(getModelBaseName("antigravity-gemini-3.8-flash")).toBe("gemini-3.8-flash");
+    expect(getModelBaseName("gemini-3.8-flash-tiered-preview")).toBe("gemini-3.8-flash");
   });
 });

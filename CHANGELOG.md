@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.7.0] - 2026-09-02
+
+### Added
+
+- Gemini 3.8 Flash support: `antigravity-gemini-3.8-flash` (low/medium/high). Same pattern as 3.7: upstream exposes a single tiered model ID (`gemini-3.8-flash-tiered`) — every tier resolves to it and the thinking level is sent via `generationConfig.thinkingLevel`. Registered in the model catalog so it appears in `opencode.json` auto-configuration and documented in README.
+
 ## [1.6.3] - 2026-08-22
 
 ### Added

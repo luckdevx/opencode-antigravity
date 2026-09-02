@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Enable Opencode to authenticate against **Antigravity** (Google's IDE) via OAuth so you can use Antigravity rate limits and access models like `gemini-3.7-flash`, `gemini-3.1-pro` and `claude-opus-4-6-thinking` with your Google credentials.
+Enable Opencode to authenticate against **Antigravity** (Google's IDE) via OAuth so you can use Antigravity rate limits and access models like `gemini-3.8-flash`, `gemini-3.1-pro` and `claude-opus-4-6-thinking` with your Google credentials.
 
 ## Features
 
@@ -29,7 +29,8 @@ When configured:
 
 | Model | Family | Notes |
 |---|---|---|
-| `antigravity-gemini-3.7-flash` | Gemini Flash | **Newest Gemini Flash** — 3 thinking tiers (low/medium/high); upstream uses a single tiered model ID, tier sent via `thinkingLevel` |
+| `antigravity-gemini-3.8-flash` | Gemini Flash | **Newest Gemini Flash** — 3 thinking tiers (low/medium/high); upstream uses a single tiered model ID, tier sent via `thinkingLevel` |
+| `antigravity-gemini-3.7-flash` | Gemini Flash | Previous Gemini Flash — 3 thinking tiers (low/medium/high); upstream uses a single tiered model ID, tier sent via `thinkingLevel` |
 | `antigravity-gemini-3.6-flash` | Gemini Flash | Fast Gemini — beats 3.1 Pro on most tasks. 3 thinking tiers (low/medium/high), each mapped to a distinct upstream model ID |
 | `antigravity-gemini-3.5-flash` | Gemini Flash | 3 thinking tiers (low/medium/high), each mapped to distinct upstream model IDs |
 | `antigravity-gpt-oss-120b-medium` | GPT-OSS | Open-source OpenAI model; shares the Claude quota bucket |
@@ -50,7 +51,7 @@ The quota check shows one progress bar per **shared quota bucket**, so it's simp
 
 ## What You Get
 
-- **Gemini 3.7 / 3.6 / 3.5 Flash, 3.1 Pro** and **Claude Opus 4.6 / Sonnet 4.6** via Google OAuth
+- **Gemini 3.8 / 3.7 / 3.6 / 3.5 Flash, 3.1 Pro** and **Claude Opus 4.6 / Sonnet 4.6** via Google OAuth
 - **Multi-account support** — add multiple Google accounts, auto-rotates when rate-limited
 - **Thinking models** — extended thinking for Claude and Gemini 3 with configurable budgets
 - **Google Search grounding** — enable web search for Gemini models (auto or always-on)
@@ -164,7 +165,8 @@ opencode run "Hello" --model=google/antigravity-claude-opus-4-6-thinking --varia
 
 | Model | Variants | Notes |
 |-------|----------|-------|
-| `antigravity-gemini-3.7-flash` | low, medium, high | **Newest Gemini Flash** — all variants share one upstream ID, tier via `thinkingLevel` |
+| `antigravity-gemini-3.8-flash` | low, medium, high | **Newest Gemini Flash** — all variants share one upstream ID, tier via `thinkingLevel` |
+| `antigravity-gemini-3.7-flash` | low, medium, high | Previous Gemini Flash — all variants share one upstream ID, tier via `thinkingLevel` |
 | `antigravity-gemini-3.6-flash` | low, medium, high | Fast Gemini — beats 3.1 Pro on most tasks |
 | `antigravity-gemini-3.5-flash` | low, medium, high | Gemini 3.5 Flash with thinking |
 | `antigravity-gemini-3-pro` | low, high | Gemini 3 Pro with thinking |
@@ -239,6 +241,16 @@ Add this to your `~/.config/opencode/opencode.json`:
         },
         "antigravity-gemini-3.6-flash": {
           "name": "Gemini 3.6 Flash (Antigravity)",
+          "limit": { "context": 1048576, "output": 65536 },
+          "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] },
+          "variants": {
+            "low": { "thinkingLevel": "low" },
+            "medium": { "thinkingLevel": "medium" },
+            "high": { "thinkingLevel": "high" }
+          }
+        },
+        "antigravity-gemini-3.8-flash": {
+          "name": "Gemini 3.8 Flash (Antigravity)",
           "limit": { "context": 1048576, "output": 65536 },
           "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] },
           "variants": {
