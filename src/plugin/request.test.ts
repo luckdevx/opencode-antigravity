@@ -593,6 +593,29 @@ describe("request.ts", () => {
       expect(headers.get("Authorization")).toBe("Bearer test-token");
     });
 
+    it("uses hub User-Agent for Gemini 3.8 Flash models", () => {
+      const result = prepareAntigravityRequest(
+        "https://generativelanguage.googleapis.com/v1beta/models/antigravity-gemini-3.8-flash:streamGenerateContent",
+        { method: "POST", body: JSON.stringify({ contents: [] }) },
+        mockAccessToken,
+        mockProjectId,
+      );
+      const headers = result.init.headers as Headers;
+      expect(result.effectiveModel).toBe("gemini-3.8-flash-low");
+      expect(headers.get("User-Agent")).toMatch(/^antigravity\/hub\//);
+    });
+
+    it("keeps legacy User-Agent for older Gemini models", () => {
+      const result = prepareAntigravityRequest(
+        "https://generativelanguage.googleapis.com/v1beta/models/antigravity-gemini-3.7-flash:streamGenerateContent",
+        { method: "POST", body: JSON.stringify({ contents: [] }) },
+        mockAccessToken,
+        mockProjectId,
+      );
+      const headers = result.init.headers as Headers;
+      expect(headers.get("User-Agent")).not.toMatch(/^antigravity\/hub\//);
+    });
+
     it("removes x-api-key header", () => {
       const result = prepareAntigravityRequest(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",

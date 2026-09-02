@@ -70,13 +70,13 @@ export const MODEL_ALIASES: Record<string, string> = {
   "gemini-3.7-flash-medium": "gemini-3.7-flash-tiered",
   "gemini-3.7-flash-high": "gemini-3.7-flash-tiered",
 
-  // Gemini 3.8 Flash - same pattern as 3.7 (based on 3.7, customizable
-  // effort levels). Upstream exposes a single tiered model ID;
-  // tier goes via thinkingLevel.
-  "gemini-3.8-flash": "gemini-3.8-flash-tiered",
-  "gemini-3.8-flash-low": "gemini-3.8-flash-tiered",
-  "gemini-3.8-flash-medium": "gemini-3.8-flash-tiered",
-  "gemini-3.8-flash-high": "gemini-3.8-flash-tiered",
+  // Gemini 3.8 Flash - per-tier upstream IDs (like 3.6, NOT single -tiered).
+  // Verified 2026-09-02: -low/-medium/-high return 200 (hub-style UA required);
+  // bare and -tiered return 404.
+  "gemini-3.8-flash": "gemini-3.8-flash-low", // default → Low tier
+  "gemini-3.8-flash-low": "gemini-3.8-flash-low",
+  "gemini-3.8-flash-medium": "gemini-3.8-flash-medium",
+  "gemini-3.8-flash-high": "gemini-3.8-flash-high",
 
   // Claude proxy names (gemini- prefix for compatibility)
   "gemini-claude-opus-4-6-thinking-low": "claude-opus-4-6-thinking",
@@ -161,6 +161,18 @@ function isGemini3ProModel(model: string): boolean {
 
 function isGemini3FlashModel(model: string): boolean {
   return GEMINI_3_FLASH_REGEX.test(model);
+}
+
+/**
+ * Models that upstream only serves to modern client surfaces.
+ * Their wire IDs return 404 under legacy `antigravity/<ver> <os>/<arch>`
+ * User-Agents and require a hub-style UA (see getHubUserAgent).
+ *
+ * Verified 2026-09-02: gemini-3.8-flash-{low,medium,high} return 200 with
+ * hub UA and 404 with legacy UA.
+ */
+export function requiresHubUserAgent(model: string): boolean {
+  return /^(antigravity-)?gemini-3\.8-flash/i.test(model);
 }
 
 /**
@@ -448,9 +460,17 @@ export function resolveModelWithVariant(
       return base;
     }
     if (lower.includes("gemini-3.8") && lower.includes("flash")) {
-      // Single tiered upstream ID - tier goes via thinkingLevel only.
-      base.thinkingLevel = variantConfig.thinkingLevel;
-      base.configSource = "variant";
+      const tierMap: Record<string, string> = {
+        low: "gemini-3.8-flash-low",
+        medium: "gemini-3.8-flash-medium",
+        high: "gemini-3.8-flash-high",
+      };
+      const remapped = tierMap[variantConfig.thinkingLevel];
+      if (remapped) {
+        base.actualModel = remapped;
+        base.thinkingLevel = variantConfig.thinkingLevel;
+        base.configSource = "variant";
+      }
       return base;
     }
   }

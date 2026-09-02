@@ -47,6 +47,7 @@ export {
   GEMINI_3_THINKING_LEVELS,
   getModelFamily,
   MODEL_ALIASES,
+  requiresHubUserAgent,
   resolveModelForHeaderStyle,
   resolveModelWithTier,
   resolveModelWithVariant,

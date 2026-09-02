@@ -29,7 +29,7 @@ When configured:
 
 | Model | Family | Notes |
 |---|---|---|
-| `antigravity-gemini-3.8-flash` | Gemini Flash | **Newest Gemini Flash** — 3 thinking tiers (low/medium/high); upstream uses a single tiered model ID, tier sent via `thinkingLevel` |
+| `antigravity-gemini-3.8-flash` | Gemini Flash | **Newest Gemini Flash** — 3 thinking tiers (low/medium/high), each mapped to a distinct upstream model ID (requires modern client UA, handled automatically) |
 | `antigravity-gemini-3.7-flash` | Gemini Flash | Previous Gemini Flash — 3 thinking tiers (low/medium/high); upstream uses a single tiered model ID, tier sent via `thinkingLevel` |
 | `antigravity-gemini-3.6-flash` | Gemini Flash | Fast Gemini — beats 3.1 Pro on most tasks. 3 thinking tiers (low/medium/high), each mapped to a distinct upstream model ID |
 | `antigravity-gemini-3.5-flash` | Gemini Flash | 3 thinking tiers (low/medium/high), each mapped to distinct upstream model IDs |
@@ -165,7 +165,7 @@ opencode run "Hello" --model=google/antigravity-claude-opus-4-6-thinking --varia
 
 | Model | Variants | Notes |
 |-------|----------|-------|
-| `antigravity-gemini-3.8-flash` | low, medium, high | **Newest Gemini Flash** — all variants share one upstream ID, tier via `thinkingLevel` |
+| `antigravity-gemini-3.8-flash` | low, medium, high | **Newest Gemini Flash** — each variant maps to its upstream ID; hub-style UA sent automatically |
 | `antigravity-gemini-3.7-flash` | low, medium, high | Previous Gemini Flash — all variants share one upstream ID, tier via `thinkingLevel` |
 | `antigravity-gemini-3.6-flash` | low, medium, high | Fast Gemini — beats 3.1 Pro on most tasks |
 | `antigravity-gemini-3.5-flash` | low, medium, high | Gemini 3.5 Flash with thinking |

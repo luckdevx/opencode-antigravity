@@ -138,6 +138,23 @@ export function getRandomizedHeaders(style: HeaderStyle): HeaderSet {
   };
 }
 
+/**
+ * Modern Antigravity client surface User-Agent (hub).
+ *
+ * Newer upstream models are only served to current client surfaces:
+ * Gemini 3.8 Flash per-tier IDs return 200 with this UA and 404 with the
+ * legacy `antigravity/<ver> <os>/<arch>` UA (verified 2026-09-02).
+ */
+export const ANTIGRAVITY_HUB_VERSION = "2.8.0";
+export const ANTIGRAVITY_HUB_CL = "963137146";
+
+export function getHubUserAgent(): string {
+  const osType =
+    process.platform === "win32" ? "windows" : process.platform === "darwin" ? "darwin" : "linux";
+  const arch = process.arch === "arm64" ? "arm64" : "amd64";
+  return `antigravity/hub/${ANTIGRAVITY_HUB_VERSION} (aidev_client; os_type=${osType}; arch=${arch}; cl=${ANTIGRAVITY_HUB_CL})`;
+}
+
 export type HeaderStyle = "antigravity" | "gemini-cli";
 
 /**

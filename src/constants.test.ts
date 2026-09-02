@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GEMINI_CLI_HEADERS, getRandomizedHeaders, type HeaderSet } from "./constants.ts";
+import { GEMINI_CLI_HEADERS, getHubUserAgent, getRandomizedHeaders, type HeaderSet } from "./constants.ts";
 
 describe("GEMINI_CLI_HEADERS", () => {
   it("matches Code Assist headers from opencode-gemini-auth", () => {
@@ -60,6 +60,14 @@ describe("getRandomizedHeaders", () => {
         expect(headers["User-Agent"]).not.toMatch(/linux\//);
       }
     });
+  });
+});
+
+describe("getHubUserAgent", () => {
+  it("returns a hub-style client surface UA", () => {
+    expect(getHubUserAgent()).toMatch(
+      /^antigravity\/hub\/\d+\.\d+\.\d+ \(aidev_client; os_type=\w+; arch=\w+; cl=\d+\)$/,
+    );
   });
 });
 

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { resolveModelForHeaderStyle, resolveModelWithTier, resolveModelWithVariant } from "./model-resolver";
+import {
+  requiresHubUserAgent,
+  resolveModelForHeaderStyle,
+  resolveModelWithTier,
+  resolveModelWithVariant,
+} from "./model-resolver";
 
 describe("resolveModelWithTier", () => {
   describe("Gemini 3 flash models (Issue #109)", () => {
@@ -260,47 +265,56 @@ describe("resolveModelWithTier", () => {
     });
   });
 
-  describe("Gemini 3.8 Flash (single tiered upstream name)", () => {
-    it("antigravity-gemini-3.8-flash defaults to -tiered", () => {
+  describe("Gemini 3.8 Flash (per-tier upstream names, hub UA required)", () => {
+    it("antigravity-gemini-3.8-flash defaults to -low", () => {
       const result = resolveModelWithTier("antigravity-gemini-3.8-flash");
-      expect(result.actualModel).toBe("gemini-3.8-flash-tiered");
+      expect(result.actualModel).toBe("gemini-3.8-flash-low");
       expect(result.thinkingLevel).toBe("low");
       expect(result.quotaPreference).toBe("antigravity");
     });
 
-    it("gemini-3.8-flash without prefix maps to -tiered", () => {
+    it("gemini-3.8-flash without prefix defaults to -low", () => {
       const result = resolveModelWithTier("gemini-3.8-flash");
-      expect(result.actualModel).toBe("gemini-3.8-flash-tiered");
+      expect(result.actualModel).toBe("gemini-3.8-flash-low");
       expect(result.thinkingLevel).toBe("low");
     });
 
-    it("maps tier suffixes to the single tiered upstream model", () => {
+    it("maps tier suffixes to upstream model names", () => {
       const low = resolveModelWithTier("antigravity-gemini-3.8-flash-low");
-      expect(low.actualModel).toBe("gemini-3.8-flash-tiered");
+      expect(low.actualModel).toBe("gemini-3.8-flash-low");
       expect(low.thinkingLevel).toBe("low");
 
       const medium = resolveModelWithTier("antigravity-gemini-3.8-flash-medium");
-      expect(medium.actualModel).toBe("gemini-3.8-flash-tiered");
+      expect(medium.actualModel).toBe("gemini-3.8-flash-medium");
       expect(medium.thinkingLevel).toBe("medium");
 
       const high = resolveModelWithTier("antigravity-gemini-3.8-flash-high");
-      expect(high.actualModel).toBe("gemini-3.8-flash-tiered");
+      expect(high.actualModel).toBe("gemini-3.8-flash-high");
       expect(high.thinkingLevel).toBe("high");
     });
 
-    it("resolveModelForHeaderStyle maps to -tiered for antigravity", () => {
+    it("resolveModelForHeaderStyle maps to -low for antigravity", () => {
       const result = resolveModelForHeaderStyle("gemini-3.8-flash", "antigravity");
-      expect(result.actualModel).toBe("gemini-3.8-flash-tiered");
+      expect(result.actualModel).toBe("gemini-3.8-flash-low");
       expect(result.quotaPreference).toBe("antigravity");
     });
 
-    it("resolveModelWithVariant keeps tiered model and sets thinkingLevel", () => {
+    it("resolveModelWithVariant remaps thinkingLevel to upstream tier", () => {
       const result = resolveModelWithVariant("antigravity-gemini-3.8-flash", {
         thinkingLevel: "high",
       });
-      expect(result.actualModel).toBe("gemini-3.8-flash-tiered");
+      expect(result.actualModel).toBe("gemini-3.8-flash-high");
       expect(result.thinkingLevel).toBe("high");
       expect(result.configSource).toBe("variant");
+    });
+
+    it("requiresHubUserAgent matches 3.8 flash IDs only", () => {
+      expect(requiresHubUserAgent("gemini-3.8-flash-low")).toBe(true);
+      expect(requiresHubUserAgent("gemini-3.8-flash")).toBe(true);
+      expect(requiresHubUserAgent("antigravity-gemini-3.8-flash-high")).toBe(true);
+      expect(requiresHubUserAgent("gemini-3.7-flash-tiered")).toBe(false);
+      expect(requiresHubUserAgent("gemini-3.6-flash-low")).toBe(false);
+      expect(requiresHubUserAgent("gemini-3-flash")).toBe(false);
     });
   });
 });

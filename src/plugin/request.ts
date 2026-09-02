@@ -6,6 +6,7 @@ import {
   CLAUDE_TOOL_SYSTEM_INSTRUCTION,
   GEMINI_CLI_ENDPOINT,
   GEMINI_CLI_HEADERS,
+  getHubUserAgent,
   getRandomizedHeaders,
   type HeaderStyle,
   SKIP_THOUGHT_SIGNATURE,
@@ -63,6 +64,7 @@ import {
   isGemini3Model,
   isImageGenerationModel,
   normalizeClaudeTools,
+  requiresHubUserAgent,
   resolveModelForHeaderStyle,
   type ThinkingTier,
 } from "./transform";
@@ -1426,6 +1428,12 @@ export function prepareAntigravityRequest(
     headers.set("User-Agent", GEMINI_CLI_HEADERS["User-Agent"]);
     headers.set("X-Goog-Api-Client", GEMINI_CLI_HEADERS["X-Goog-Api-Client"]);
     headers.set("Client-Metadata", GEMINI_CLI_HEADERS["Client-Metadata"]);
+  }
+
+  // Some newer upstream models are only served to modern client surfaces:
+  // their wire IDs 404 under legacy UAs even when provisioned.
+  if (headerStyle === "antigravity" && requiresHubUserAgent(effectiveModel)) {
+    headers.set("User-Agent", getHubUserAgent());
   }
   return {
     request: transformedUrl,

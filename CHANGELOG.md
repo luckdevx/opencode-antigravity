@@ -1,10 +1,16 @@
 # Changelog
 
+## [1.7.1] - 2026-09-02
+
+### Fixed
+
+- Gemini 3.8 Flash routing (verified live against the API): upstream uses **per-tier** IDs (`gemini-3.8-flash-low/medium/high`, like 3.6 — not a single `-tiered` ID like 3.7), and those IDs are only served to modern client surfaces (legacy `antigravity/<ver>` User-Agents get 404 even for valid IDs). The plugin now maps each tier to its upstream ID and sends a hub-style User-Agent for 3.8 requests. Without this, every 3.8 request 404'd on all endpoints/accounts and looked like a hang.
+
 ## [1.7.0] - 2026-09-02
 
 ### Added
 
-- Gemini 3.8 Flash support: `antigravity-gemini-3.8-flash` (low/medium/high). Same pattern as 3.7: upstream exposes a single tiered model ID (`gemini-3.8-flash-tiered`) — every tier resolves to it and the thinking level is sent via `generationConfig.thinkingLevel`. Registered in the model catalog so it appears in `opencode.json` auto-configuration and documented in README.
+- Gemini 3.8 Flash support: `antigravity-gemini-3.8-flash` (low/medium/high). Registered in the model catalog so it appears in `opencode.json` auto-configuration and documented in README. (Upstream routing verified and corrected in 1.7.1.)
 
 ## [1.6.3] - 2026-08-22
 

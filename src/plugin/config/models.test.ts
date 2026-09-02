@@ -98,5 +98,9 @@ describe("getModelBaseName", () => {
     expect(getModelBaseName("gemini-3.8-flash-tiered")).toBe("gemini-3.8-flash");
     expect(getModelBaseName("antigravity-gemini-3.8-flash")).toBe("gemini-3.8-flash");
     expect(getModelBaseName("gemini-3.8-flash-tiered-preview")).toBe("gemini-3.8-flash");
+    // Per-tier upstream IDs map to the same base for quota grouping.
+    expect(getModelBaseName("gemini-3.8-flash-low")).toBe("gemini-3.8-flash");
+    expect(getModelBaseName("gemini-3.8-flash-medium")).toBe("gemini-3.8-flash");
+    expect(getModelBaseName("gemini-3.8-flash-high")).toBe("gemini-3.8-flash");
   });
 });

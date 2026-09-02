@@ -57,7 +57,7 @@ Gemini 3 models use string-based thinking levels. Available levels differ by mod
 | `medium` | ✅ | ✅ | ❌ | Balanced thinking |
 | `high` | ✅ | ✅ | ✅ | Maximum thinking (default) |
 
-> **Note:** The API rejects invalid levels (e.g., `"minimal"` on Pro or on 3.5/3.6/3.7/3.8 tiered models). Configure variants accordingly. For `antigravity-gemini-3.7-flash`, all variants resolve to the single upstream ID `gemini-3.7-flash-tiered` with the tier sent via `generationConfig.thinkingLevel`. `antigravity-gemini-3.8-flash` follows the same pattern (`gemini-3.8-flash-tiered`).
+> **Note:** The API rejects invalid levels (e.g., `"minimal"` on Pro or on 3.5/3.6/3.7/3.8 tiered models). Configure variants accordingly. For `antigravity-gemini-3.7-flash`, all variants resolve to the single upstream ID `gemini-3.7-flash-tiered` with the tier sent via `generationConfig.thinkingLevel`. `antigravity-gemini-3.8-flash` instead uses per-tier upstream IDs (`-low`/`-medium`/`-high`, like 3.6) and requires a hub-style User-Agent (sent automatically).
 
 ### Gemini 3 Pro Example
 

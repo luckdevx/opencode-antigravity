@@ -85,7 +85,7 @@ Accept: text/event-stream
 | Gemini 3.5 Flash (Medium) | `gemini-3.5-flash-low` | Google | ✅ Verified |
 | Gemini 3.6 Flash (Low/Medium/High) | `gemini-3.6-flash-low`/`-medium`/`-high` | Google | ✅ Verified |
 | Gemini 3.7 Flash (Low/Medium/High) | `gemini-3.7-flash-tiered` | Google | ✅ Verified (single tiered ID; tier via `thinkingLevel`) |
-| Gemini 3.8 Flash (Low/Medium/High) | `gemini-3.8-flash-tiered` (assumed, same pattern as 3.7) | Google | ❌ Not provisioned (verified 2026-09-02: 404 on bare/tiered/per-tier IDs across 20 accounts; absent from `:fetchAvailableModels`) |
+| Gemini 3.8 Flash (Low/Medium/High) | `gemini-3.8-flash-low`/`-medium`/`-high` | Google | ✅ Verified (per-tier IDs like 3.6; require hub-style UA, legacy UA = 404) |
 | GPT-OSS 120B Medium | `gpt-oss-120b-medium` | Other (shares Claude bucket) | ✅ Verified |
 
 ---
